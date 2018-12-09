@@ -1,0 +1,16 @@
+---
+stages:
+    - validate
+
+# #### BUILD
+Building Docker Images:
+    image: debian:stretch-slim
+    stage: validate
+    when: manual
+    script:
+        # #### Check scripts
+        - |
+            for script in $(ls -A1 /builds/${CI_PROJECT_PATH}/validate/scripts/*.bsh); do
+                . ${script}
+            done
+
