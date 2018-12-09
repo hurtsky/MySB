@@ -4,7 +4,7 @@ stages:
 
 # #### BUILD
 Building Docker Images:
-    image: debian:stretch-slim
+    image: registry.gitlab.com/toulousain79/mysb_dev/php/php:latest
     stage: validate
     when: manual
     script:
