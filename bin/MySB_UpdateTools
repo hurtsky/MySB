@@ -56,6 +56,7 @@ fi
 
 #### Correcting minor bugs
 # VARs
+sServicesToRestart=""
 gfnListCountUsers 'normal'
 source /opt/MySB/inc/funcs_by_script/funcs_Install
 # LogRotate
@@ -104,8 +105,7 @@ if [ ! -d /export ] && [ "$gbIsInstalled_OpenVPN" == "YES" ]; then
 		[[ -z $(mount -l 2> /dev/null | grep /export/$seedUser) ]] && mount --bind /home/$seedUser /export/$seedUser
 		[[ -z $(grep "/export/$seedUser" /etc/fstab) ]] && echo -e "# /export/$seedUser\n/home/$seedUser /export/$seedUser none bind 0 0 " >> /etc/fstab
 	done
-	# Service restart
-	gfnManageServices start "nfs-kernel-server"
+	sServicesToRestart="${sServicesToRestart} nfs-kernel-server"
 fi
 #### IPtables rules files for SystemD
 if [ -f /etc/iptables.up.rules ]; then
@@ -137,7 +137,6 @@ fi
 [[ -f ${MySB_InstallDir}/ssl/chain.pem ]] && rm -vf ${MySB_InstallDir}/ssl/chain.pem
 [[ -f ${MySB_InstallDir}/ssl/cert.pem ]] && rm -vf ${MySB_InstallDir}/ssl/cert.pem
 [[ -f ${MySB_InstallDir}/ssl/privkey.pem ]] && rm -vf ${MySB_InstallDir}/ssl/privkey.pem
-
 if [[ -z $(grep 'ssl_certificate' /etc/nginx/nginx.conf) ]] || [[ -z $(grep 'logs_format' /etc/nginx/nginx.conf) ]]; then
 	# NginX
 	install -v -o root -g root -m 0600 ${MySB_InstallDir}/templates/nginx/etc.nginx.logs_format.tmpl /etc/nginx/logs_format
@@ -152,7 +151,7 @@ if [[ -z $(grep 'ssl_certificate' /etc/nginx/nginx.conf) ]] || [[ -z $(grep 'log
 	if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
 		echo "	include snippets/letsencrypt_${gsHostNameFqdn}.conf;" > /etc/nginx/ssl_certificate
 	fi
-	gfnManageServices start "nginx"
+	sServicesToRestart="${sServicesToRestart} nginx"
 
 	# VSFTPd
 	nNumLine=$(cat /etc/vsftpd.conf | grep 'rsa_cert_file' -n -m 1 | cut -d ':' -f 1)
@@ -161,7 +160,7 @@ if [[ -z $(grep 'ssl_certificate' /etc/nginx/nginx.conf) ]] || [[ -z $(grep 'log
 	nNumLine=$(cat /etc/vsftpd.conf | grep 'rsa_private_key_file' -n -m 1 | cut -d ':' -f 1)
 	sed -i '/rsa_private_key_file/d' /etc/vsftpd.conf
 	sed -i ""$nNumLine"i\/etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem" /etc/vsftpd.conf
-	gfnManageServices start "vsftpd"
+	sServicesToRestart="${sServicesToRestart} vsftpd"
 
 	# Tautulli
 	if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
@@ -174,10 +173,12 @@ if [[ -z $(grep 'ssl_certificate' /etc/nginx/nginx.conf) ]] || [[ -z $(grep 'log
 			sed -i ""$nNumLine"i\https_cert = /etc/letsencrypt/live/${gsHostNameFqdn}/cert.pem" ${gsRepoDir}/config.ini
 			sed -i ""$nNumLine"i\https_cert_chain = /etc/letsencrypt/live/${gsHostNameFqdn}/fullchain.pem" ${gsRepoDir}/config.ini
 			sed -i ""$nNumLine"i\https_key = /etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem" ${gsRepoDir}/config.ini
-			gfnManageServices start "tautulli"
+			sServicesToRestart="${sServicesToRestart} tautulli"
 		fi
 	fi
 fi
+#### Restart services
+[[ ! -z "${sServicesToRestart}" ]] && gfnManageServices start "${sServicesToRestart}"
 
 # -----------------------------------------
 source $(dirname $0)/../inc/includes_after
