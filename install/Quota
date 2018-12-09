@@ -38,11 +38,11 @@ cat /etc/fstab
 # Create quota files
 echo
 if [[ ! -z $(grep '[[:space:]]/home[[:space:]]' /etc/fstab) ]]; then
-    [[ ! -f /home/aquota.user ]] && touch /home/aquota.user; chmod -v 600 /home/aquota.user
-    [[ ! -f /home/aquota.group ]] && touch /home/aquota.group; chmod -v 600 /home/aquota.group
+	[[ ! -f /home/aquota.user ]] && touch /home/aquota.user; chmod -v 600 /home/aquota.user
+	[[ ! -f /home/aquota.group ]] && touch /home/aquota.group; chmod -v 600 /home/aquota.group
 else
-    [[ ! -f /aquota.user ]] && touch /aquota.user; chmod -v 600 /aquota.user
-    [[ ! -f /aquota.group ]] && touch /aquota.group; chmod -v 600 /aquota.group
+	[[ ! -f /aquota.user ]] && touch /aquota.user; chmod -v 600 /aquota.user
+	[[ ! -f /aquota.group ]] && touch /aquota.group; chmod -v 600 /aquota.group
 fi
 
 #### Install packages

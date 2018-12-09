@@ -79,12 +79,12 @@ perl -pi -e "s/worker_processes auto;/worker_processes $gsProcessors;/g" /etc/ng
 
 #### Certificates
 if [ [ -f ${MySB_InstallDir}/ssl/mysb.key ] && [ -f ${MySB_InstallDir}/ssl/mysb.cert ] ]; then
-    echo "    ssl_certificate_key ${MySB_InstallDir}/ssl/mysb.key;" > /etc/nginx/snippets/mysb_selfsigned.conf
-    echo "    ssl_certificate ${MySB_InstallDir}/ssl/mysb.cert;" >> /etc/nginx/snippets/mysb_selfsigned.conf
-    echo "    include snippets/mysb_selfsigned.conf;" > /etc/nginx/ssl_certificate
+	echo "	ssl_certificate_key ${MySB_InstallDir}/ssl/mysb.key;" > /etc/nginx/snippets/mysb_selfsigned.conf
+	echo "	ssl_certificate ${MySB_InstallDir}/ssl/mysb.cert;" >> /etc/nginx/snippets/mysb_selfsigned.conf
+	echo "	include snippets/mysb_selfsigned.conf;" > /etc/nginx/ssl_certificate
 fi
 if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
-    echo "    include snippets/letsencrypt_${gsHostNameFqdn}.conf;" > /etc/nginx/ssl_certificate
+	echo "	include snippets/letsencrypt_${gsHostNameFqdn}.conf;" > /etc/nginx/ssl_certificate
 fi
 
 #### Default Server

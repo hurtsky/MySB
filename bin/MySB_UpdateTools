@@ -109,16 +109,16 @@ if [ ! -d /export ] && [ "$gbIsInstalled_OpenVPN" == "YES" ]; then
 fi
 #### IPtables rules files for SystemD
 if [ -f /etc/iptables.up.rules ]; then
-    gfnPackageBundleInstall "iptables-persistent"
-    systemctl enable netfilter-persistent
-    install -d /etc/iptables
-    sed -i '/post-up iptables-restore/d' /etc/network/interfaces
-    mv -v /etc/iptables.up.rules /etc/iptables/rules.v4
+	gfnPackageBundleInstall "iptables-persistent"
+	systemctl enable netfilter-persistent
+	install -d /etc/iptables
+	sed -i '/post-up iptables-restore/d' /etc/network/interfaces
+	mv -v /etc/iptables.up.rules /etc/iptables/rules.v4
 fi
 #### IPtables RSyslog
 if [[ ! -z $(grep 'IN=' /etc/rsyslog.d/iptables.conf) ]]; then
-    echo "if (\$msg contains '[MySB] ') then /var/log/iptables.log" > /etc/rsyslog.d/iptables.conf
-    echo "& stop" >> /etc/rsyslog.d/iptables.conf
+	echo "if (\$msg contains '[MySB] ') then /var/log/iptables.log" > /etc/rsyslog.d/iptables.conf
+	echo "& stop" >> /etc/rsyslog.d/iptables.conf
 fi
 #### Check usual commands
 sPackagesList=""
@@ -126,10 +126,10 @@ sPackagesList=""
 [[ ! -z ${sPackagesList} ]] && gfnPackageBundleInstall "$sPackagesList"
 #### Quota
 if [[ -z $(grep '@' /etc/warnquota.conf) ]]; then
-    install -v -o root -g root -m 0644 ${MySB_InstallDir}/templates/other/etc.warnquota.conf.tmpl /etc/warnquota.conf
-    sed -i "s/<main_user_mail>/${gsMainUserEmail}/g;" /etc/warnquota.conf
-    sed -i "s/<mail_subject>/${Quota_MailSubject}/g;" /etc/warnquota.conf
-    sed -i "s/<mail_message>/${Quota_MailMessage}/g;" /etc/warnquota.conf
+	install -v -o root -g root -m 0644 ${MySB_InstallDir}/templates/other/etc.warnquota.conf.tmpl /etc/warnquota.conf
+	sed -i "s/<main_user_mail>/${gsMainUserEmail}/g;" /etc/warnquota.conf
+	sed -i "s/<mail_subject>/${Quota_MailSubject}/g;" /etc/warnquota.conf
+	sed -i "s/<mail_message>/${Quota_MailMessage}/g;" /etc/warnquota.conf
 fi
 
 #### Let's Encrypt
@@ -138,45 +138,45 @@ fi
 [[ -f ${MySB_InstallDir}/ssl/cert.pem ]] && rm -vf ${MySB_InstallDir}/ssl/cert.pem
 [[ -f ${MySB_InstallDir}/ssl/privkey.pem ]] && rm -vf ${MySB_InstallDir}/ssl/privkey.pem
 
-if [ [ -z $(grep 'ssl_certificate' /etc/nginx/nginx.conf) ] || [ -z $(grep 'logs_format' /etc/nginx/nginx.conf) ] ]; then
-    # NginX
-    install -v -o root -g root -m 0600 ${MySB_InstallDir}/templates/nginx/etc.nginx.logs_format.tmpl /etc/nginx/logs_format
-    install -v -o root -g root -m 0600 ${MySB_InstallDir}/templates/nginx/etc.nginx.nginx.conf.tmpl /etc/nginx/nginx.conf
-    perl -pi -e "s/worker_processes auto;/worker_processes $gsProcessors;/g" /etc/nginx/nginx.conf
-    # Certificates
-    if [ [ -f ${MySB_InstallDir}/ssl/mysb.key ] && [ -f ${MySB_InstallDir}/ssl/mysb.cert ] ]; then
-        echo "    ssl_certificate_key ${MySB_InstallDir}/ssl/mysb.key;" > /etc/nginx/snippets/mysb_selfsigned.conf
-        echo "    ssl_certificate ${MySB_InstallDir}/ssl/mysb.cert;" >> /etc/nginx/snippets/mysb_selfsigned.conf
-        echo "    include snippets/mysb_selfsigned.conf;" > /etc/nginx/ssl_certificate
-    fi
-    if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
-        echo "    include snippets/letsencrypt_${gsHostNameFqdn}.conf;" > /etc/nginx/ssl_certificate
-    fi
-    gfnManageServices start "nginx"
+if [[ -z $(grep 'ssl_certificate' /etc/nginx/nginx.conf) ]] || [[ -z $(grep 'logs_format' /etc/nginx/nginx.conf) ]]; then
+	# NginX
+	install -v -o root -g root -m 0600 ${MySB_InstallDir}/templates/nginx/etc.nginx.logs_format.tmpl /etc/nginx/logs_format
+	install -v -o root -g root -m 0600 ${MySB_InstallDir}/templates/nginx/etc.nginx.nginx.conf.tmpl /etc/nginx/nginx.conf
+	perl -pi -e "s/worker_processes auto;/worker_processes $gsProcessors;/g" /etc/nginx/nginx.conf
+	# Certificates
+	if [[ -f ${MySB_InstallDir}/ssl/mysb.key ]] && [[ -f ${MySB_InstallDir}/ssl/mysb.cert ]]; then
+		echo "	ssl_certificate_key ${MySB_InstallDir}/ssl/mysb.key;" > /etc/nginx/snippets/mysb_selfsigned.conf
+		echo "	ssl_certificate ${MySB_InstallDir}/ssl/mysb.cert;" >> /etc/nginx/snippets/mysb_selfsigned.conf
+		echo "	include snippets/mysb_selfsigned.conf;" > /etc/nginx/ssl_certificate
+	fi
+	if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
+		echo "	include snippets/letsencrypt_${gsHostNameFqdn}.conf;" > /etc/nginx/ssl_certificate
+	fi
+	gfnManageServices start "nginx"
 
-    # VSFTPd
-    nNumLine=$(cat /etc/vsftpd.conf | grep 'rsa_cert_file' -n -m 1 | cut -d ':' -f 1)
-    sed -i '/rsa_cert_file/d' /etc/vsftpd.conf
-    sed -i ""$nNumLine"i\/etc/letsencrypt/live/${gsHostNameFqdn}/cert.pem" /etc/vsftpd.conf
-    nNumLine=$(cat /etc/vsftpd.conf | grep 'rsa_private_key_file' -n -m 1 | cut -d ':' -f 1)
-    sed -i '/rsa_private_key_file/d' /etc/vsftpd.conf
-    sed -i ""$nNumLine"i\/etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem" /etc/vsftpd.conf
-    gfnManageServices start "vsftpd"
+	# VSFTPd
+	nNumLine=$(cat /etc/vsftpd.conf | grep 'rsa_cert_file' -n -m 1 | cut -d ':' -f 1)
+	sed -i '/rsa_cert_file/d' /etc/vsftpd.conf
+	sed -i ""$nNumLine"i\/etc/letsencrypt/live/${gsHostNameFqdn}/cert.pem" /etc/vsftpd.conf
+	nNumLine=$(cat /etc/vsftpd.conf | grep 'rsa_private_key_file' -n -m 1 | cut -d ':' -f 1)
+	sed -i '/rsa_private_key_file/d' /etc/vsftpd.conf
+	sed -i ""$nNumLine"i\/etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem" /etc/vsftpd.conf
+	gfnManageServices start "vsftpd"
 
-    # Tautulli
-    if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
-        gfnGetRepoValues 'Tautulli'
-        if [[ ! -f ${gsRepoDir}/config.ini ]]; then
-            nNumLine=$(cat ${gsRepoDir}/config.ini | grep 'https_cert' -n -m 1 | cut -d ':' -f 1)
-            sed -i '/https_cert/d' ${gsRepoDir}/config.ini
-            sed -i '/https_key/d' ${gsRepoDir}/config.ini
-            sed -i '/https_cert_chain/d' ${gsRepoDir}/config.ini
-            sed -i ""$nNumLine"i\https_cert = /etc/letsencrypt/live/${gsHostNameFqdn}/cert.pem" ${gsRepoDir}/config.ini
-            sed -i ""$nNumLine"i\https_cert_chain = /etc/letsencrypt/live/${gsHostNameFqdn}/fullchain.pem" ${gsRepoDir}/config.ini
-            sed -i ""$nNumLine"i\https_key = /etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem" ${gsRepoDir}/config.ini
-            gfnManageServices start "tautulli"
-        fi
-    fi
+	# Tautulli
+	if [[ -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
+		gfnGetRepoValues 'Tautulli'
+		if [[ ! -f ${gsRepoDir}/config.ini ]]; then
+			nNumLine=$(cat ${gsRepoDir}/config.ini | grep 'https_cert' -n -m 1 | cut -d ':' -f 1)
+			sed -i '/https_cert/d' ${gsRepoDir}/config.ini
+			sed -i '/https_key/d' ${gsRepoDir}/config.ini
+			sed -i '/https_cert_chain/d' ${gsRepoDir}/config.ini
+			sed -i ""$nNumLine"i\https_cert = /etc/letsencrypt/live/${gsHostNameFqdn}/cert.pem" ${gsRepoDir}/config.ini
+			sed -i ""$nNumLine"i\https_cert_chain = /etc/letsencrypt/live/${gsHostNameFqdn}/fullchain.pem" ${gsRepoDir}/config.ini
+			sed -i ""$nNumLine"i\https_key = /etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem" ${gsRepoDir}/config.ini
+			gfnManageServices start "tautulli"
+		fi
+	fi
 fi
 
 # -----------------------------------------

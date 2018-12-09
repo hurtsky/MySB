@@ -17,7 +17,7 @@ http {
 	add_header X-Server $hostname;
 
 	#### ngx_http_ssl_module
-    include /etc/nginx/ssl_certificate;
+	include /etc/nginx/ssl_certificate;
 	ssl_buffer_size 4k;
 	ssl_prefer_server_ciphers on;
 	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
