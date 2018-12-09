@@ -4,7 +4,7 @@ stages:
 
 # #### BUILD
 Building Docker Images:
-    image: registry.gitlab.com/toulousain79/mysb_dev/php/php:latest
+    image: registry.gitlab.com/toulousain79/mysb_dev/project_validation/project_validation:latest
     stage: validate
     when: manual
     script:
@@ -13,4 +13,3 @@ Building Docker Images:
             for script in $(ls -A1 /builds/${CI_PROJECT_PATH}/validate/scripts/*.bsh); do
                 . ${script}
             done
-
