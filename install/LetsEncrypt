@@ -212,6 +212,12 @@ else
 	fnNextRenewal
 fi
 
+#### NginX snippet
+if [[ ! -f /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf ]]; then
+    # Use of new certificate
+    fnUseOfCertificates
+fi
+
 #### Clean
 [[ -d /opt/eff.org ]] && rm -rf /opt/eff.org
 
