@@ -89,7 +89,7 @@ fnUseOfCertificates() {
 	if [[ -f /etc/letsencrypt/live/${gsHostNameFqdn}/fullchain.pem ]] && [[ -f /etc/letsencrypt/live/${gsHostNameFqdn}/privkey.pem ]]; then
 		# NginX
 		echo "	ssl_certificate_key /etc/letsencrypt/live/${gsHostNameFqdn}/ssl/privkey.pem;" > /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf
-		echo "	ssl_certificate /etc/letsencrypt/live/${gsHostNameFqdn}/fullchain.pem;" > /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf
+		echo "	ssl_certificate /etc/letsencrypt/live/${gsHostNameFqdn}/fullchain.pem;" >> /etc/nginx/snippets/letsencrypt_${gsHostNameFqdn}.conf
 		echo "	include snippets/letsencrypt_${gsHostNameFqdn}.conf;" > /etc/nginx/ssl_certificate
 		sServicesToRestart="${sServicesToRestart} nginx"
 
